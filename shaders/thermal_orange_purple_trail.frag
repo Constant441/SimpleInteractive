@@ -6,13 +6,11 @@ layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
+    float trailDecay; // ЧАСТЬ uniform-блока (нужно для Vulkan)
 };
 
 layout(binding = 1) uniform sampler2D source;    // текущий кадр (вход)
 layout(binding = 2) uniform sampler2D previous;  // предыдущий результат (feedback)
-
-// decay: насколько быстро затухает шлейф (больше = длиннее шлейф)
-uniform float trailDecay;
 
 vec3 thermalMap(vec3 rgb)
 {

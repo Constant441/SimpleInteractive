@@ -26,6 +26,7 @@ Window {
         sourceItem: videoOutput
         hideSource: true
         live: true
+        opacity: 0.0 // только как источник текстуры для шейдеров
     }
 
     // Шейдер с feedback-памятью кадра -> “шлейф”.
@@ -34,9 +35,10 @@ Window {
         id: trailPrev
         anchors.fill: parent
         sourceItem: trailEffect
-        hideSource: false
+        hideSource: true
         live: true
         recursive: true
+        opacity: 0.0 // только feedback-текстура
     }
 
     ShaderEffect {
