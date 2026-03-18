@@ -31,16 +31,19 @@ vec3 thermalMap(vec3 rgb)
 
 void main()
 {
-    vec2 px = vec2(texelX, texelY) * blurAmount;
+    // gaussian-like 3x3 blur
+    // blurAmount здесь интерпретируем как sigma в пикселях:
+    // маленький sigma = меньше размытия, большой sigma = сильнее (но без "полос").
+    vec2 px = vec2(texelX, texelY);
 
-    // 3x3 blur kernel (approx Gaussian)
-    // [1 2 1]
-    // [2 4 2] / 16
-    // [1 2 1]
-    const float w00 = 1.0, w01 = 2.0, w02 = 1.0;
-    const float w10 = 2.0, w11 = 4.0, w12 = 2.0;
-    const float w20 = 1.0, w21 = 2.0, w22 = 1.0;
-    const float wSum = w00 + w01 + w02 + w10 + w11 + w12 + w20 + w21 + w22;
+    float sigma = max(blurAmount, 0.01);
+    float inv2Sigma2 = 1.0 / (2.0 * sigma * sigma);
+
+    // d2: центр 0, края 1, углы 2
+    float w11 = 1.0;
+    float w01 = exp(-1.0 * inv2Sigma2); // edge weight
+    float w00 = exp(-2.0 * inv2Sigma2); // corner weight
+    float wSum = w11 + 4.0 * w01 + 4.0 * w00;
 
     vec4 curC = texture(source, qt_TexCoord0);
     float outA = curC.a;
@@ -106,9 +109,9 @@ void main()
     g22 = pow(clamp(g22, 0.0, 1.0), 0.75);
 
     gCurAccum =
-        (g00 * w00 + g01 * w01 + g02 * w02 +
-         g10 * w10 + g11 * w11 + g12 * w12 +
-         g20 * w20 + g21 * w21 + g22 * w22) / wSum;
+        (g00 * w00 + g01 * w01 + g02 * w00 +
+         g10 * w01 + g11 * w11 + g12 * w01 +
+         g20 * w00 + g21 * w01 + g22 * w00) / wSum;
 
     // --- gPrev from blurred previous ---
     // previous is already thermal colored, where orange.g = 0.45 => col.g = 0.45 * g
@@ -138,9 +141,9 @@ void main()
     gp22 = clamp(gp22, 0.0, 1.0);
 
     gPrevAccum =
-        (gp00 * w00 + gp01 * w01 + gp02 * w02 +
-         gp10 * w10 + gp11 * w11 + gp12 * w12 +
-         gp20 * w20 + gp21 * w21 + gp22 * w22) / wSum;
+        (gp00 * w00 + gp01 * w01 + gp02 * w00 +
+         gp10 * w01 + gp11 * w11 + gp12 * w01 +
+         gp20 * w00 + gp21 * w01 + gp22 * w00) / wSum;
 
     // Feedback в пространстве интенсивности, чтобы сохранить палитру.
     float gTrail = clamp(max(gCurAccum, gPrevAccum * trailDecay), 0.0, 1.0);
