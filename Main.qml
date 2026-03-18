@@ -29,17 +29,14 @@ Window {
         fillMode: VideoOutput.PreserveAspectFit
     }
 
-    // Передаем кадр из VideoOutput в шейдер (QML ShaderEffect компилируется в .qsb).
     ShaderEffectSource {
         id: shaderSource
         anchors.fill: parent
         sourceItem: videoOutput
         hideSource: true
         live: true
-        // Не обнуляем opacity: для корректного premultiplied alpha лучше оставлять 1.0.
     }
 
-    // Термо-маппинг (оранжевый–фиолетовый), результат в текстуру для Cel.
     ShaderEffect {
         id: thermalBase
         anchors.fill: parent
@@ -56,7 +53,6 @@ Window {
         live: true
     }
 
-    // Cel (toon): ступени по яркости, палитра термо (синий → фиолетовый → красный → оранжевый → жёлтый).
     ShaderEffect {
         id: celEffect
         anchors.fill: parent

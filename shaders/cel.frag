@@ -3,7 +3,6 @@
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 
-// Cel: по яркости — одна ступень = один плоский тон. Чёрные участки тоже в один тон (тёмный фиолетовый).
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
@@ -25,13 +24,12 @@ void main()
     float bands = max(floor(numBands), 2.0);
     float stepVal = floor(value * bands + 0.5) / bands;
 
-    // Термо-палитра: чёткие зоны от холодного к горячему (видны все ступени).
     vec3 col;
-    if (stepVal <= 0.0)       col = vec3(0.05, 0.0, 0.2);   // тёмно-синий
-    else if (stepVal <= 0.2)  col = vec3(0.25, 0.0, 0.85);  // фиолетовый
-    else if (stepVal <= 0.4)  col = vec3(0.9, 0.15, 0.35);  // красно-розовый
-    else if (stepVal <= 0.6)  col = vec3(1.0, 0.45, 0.0);   // оранжевый
-    else                      col = vec3(1.0, 0.95, 0.5);   // жёлтый (горячее)
+    if (stepVal <= 0.0)       col = vec3(0.05, 0.0, 0.2);
+    else if (stepVal <= 0.2)  col = vec3(0.25, 0.0, 0.85);
+    else if (stepVal <= 0.4)  col = vec3(0.9, 0.2, 0.4);
+    else if (stepVal <= 0.6)  col = vec3(1.0, 0.45, 0.0);
+    else                      col = vec3(1.0, 0.95, 0.5);
     col *= (1.0 - shadowStrength * (1.0 - stepVal));
 
     fragColor = vec4(col * a, a) * qt_Opacity;
