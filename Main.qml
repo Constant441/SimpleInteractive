@@ -7,45 +7,28 @@ Window {
     visible: true
     title: qsTr("TermoCam - WebCam")
 
-    property bool showError: false
-
-    MediaDevices {
-        id: mediaDevices
-    }
-
     VideoOutput {
         id: videoOutput
         anchors.fill: parent
         fillMode: VideoOutput.PreserveAspectFit
+        videoSink: cameraController.videoSink
     }
 
-    CaptureSession {
-        id: captureSession
-        videoOutput: videoOutput
-        camera: Camera {
-            id: camera
-            cameraDevice: mediaDevices.defaultVideoInput
-
-            onErrorOccurred: (error, errorString) => {
-                statusText.text = qsTr("Ошибка камеры: ") + errorString
-                showError = true
-            }
-        }
+    Rectangle {
+        anchors.fill: parent
+        color: "#000000"
+        opacity: cameraController.running ? 0.0 : 0.35
+        visible: !cameraController.running
     }
 
     Text {
-        id: statusText
         anchors.centerIn: parent
-        text: qsTr("Веб-камера не найдена")
-        visible: mediaDevices.defaultVideoInput.isNull() || showError
         color: "white"
         font.pixelSize: 18
         style: Text.Raised
+        text: cameraController.status
+        visible: !cameraController.running || !cameraController.hasCamera
     }
 
-    Component.onCompleted: {
-        // На некоторых платформах нужно явно стартовать, а не полагаться на active.
-        if (mediaDevices.defaultVideoInput && !mediaDevices.defaultVideoInput.isNull())
-            captureSession.camera.start()
-    }
+    Component.onCompleted: cameraController.start()
 }

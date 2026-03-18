@@ -10,6 +10,7 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appTermoCam
     main.cpp
+    camera_controller.cpp
 )
 
 qt_add_qml_module(appTermoCam
