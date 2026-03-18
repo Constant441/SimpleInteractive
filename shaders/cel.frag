@@ -3,12 +3,12 @@
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 
-// DSO-style Cel: яркость через ступенчатый ramp, базовый цвет умножается на фактор (тень = тот же цвет, темнее).
+// Cel: по яркости — одна ступень = один плоский тон. Чёрные участки тоже в один тон (тёмный фиолетовый).
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
-    float numBands;   // число ступеней (2–4 типично)
-    float shadowStrength; // насколько темнее тени (0.2–0.5)
+    float numBands;
+    float shadowStrength;
 };
 
 layout(binding = 1) uniform sampler2D source;
@@ -17,18 +17,18 @@ void main()
 {
     vec4 p = texture(source, qt_TexCoord0);
     float a = max(p.a, 1e-5);
-    vec3 baseColor = p.rgb / a;
+    vec3 raw = p.rgb / a;
 
-    float value = dot(baseColor, vec3(0.344, 0.5, 0.156));
+    float value = dot(raw, vec3(0.344, 0.5, 0.156));
     value = clamp(value, 0.0, 1.0);
 
-    // Ступенчатый ramp: value -> дискретные уровни по всей картинке
     float bands = max(floor(numBands), 2.0);
     float stepVal = floor(value * bands + 0.5) / bands;
-    // Фактор от (1 - shadowStrength) до 1.0, чтобы тёмные ступени не уходили в черноту и cel был виден везде
-    float factor = mix(1.0 - shadowStrength, 1.0, stepVal);
 
-    vec3 col = baseColor * factor;
+    // Один плоский цвет на ступень: от тёмно-фиолетового до оранжевого. Чёрные (value≈0) → тот же тёмный тон.
+    vec3 darkPurple = vec3(0.25, 0.0, 0.45) * (1.0 - shadowStrength * 0.5);
+    vec3 brightOrange = vec3(1.0, 0.45, 0.0);
+    vec3 col = mix(darkPurple, brightOrange, stepVal);
 
     fragColor = vec4(col * a, a) * qt_Opacity;
 }
