@@ -47,7 +47,7 @@ Window {
         sourceItem: videoOutput
         hideSource: true
         live: true
-        opacity: 0.0 // только как источник текстуры для шейдеров
+        // Не обнуляем opacity: для корректного premultiplied alpha лучше оставлять 1.0.
     }
 
     // Базовый термошейдер (без trail) — используем для диагностики и как fallback.
@@ -62,7 +62,7 @@ Window {
     // trailPrev хранит результат предыдущего кадра через recursive ShaderEffectSource.
     // Для диагностики сначала проверяем, что обычный термошейдер работает.
     // Затем включай trail.
-    property bool enableTrail: false
+    property bool enableTrail: true
 
     ShaderEffectSource {
         id: trailPrev
@@ -71,7 +71,6 @@ Window {
         hideSource: true
         live: enableTrail
         recursive: enableTrail
-        opacity: 0.0 // только feedback-текстура
     }
 
     ShaderEffect {
