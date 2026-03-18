@@ -6,6 +6,7 @@
 #include <QMediaDevices>
 #include <QVideoFrame>
 #include <QVideoSink>
+#include <QVariant>
 
 #include <QtMath>
 #include <cmath>
@@ -258,7 +259,10 @@ void CameraController::setVideoOutput(QObject* videoOutput)
     QObject* sinkObj = m_videoOutput->property("videoSink").value<QObject*>();
     m_outputSink = qobject_cast<QVideoSink*>(sinkObj);
     if (m_processingSink) {
-        m_processingSink->setOutputSink(m_outputSink);
+        // `m_processingSink` фактически является ThermalVideoSink,
+        // но в заголовке хранится как QVideoSink*, поэтому делаем безопасный каст.
+        auto* thermalSink = static_cast<ThermalVideoSink*>(m_processingSink);
+        thermalSink->setOutputSink(m_outputSink);
     }
 
     // Если камера уже запущена — перезапустим, чтобы поток кадров пошёл в нужный sink.
