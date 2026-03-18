@@ -58,37 +58,6 @@ Window {
         fragmentShader: "qrc:/shaders/thermal_orange_purple.frag.qsb"
     }
 
-    // Шейдер с feedback-памятью кадра -> “шлейф”.
-    // trailPrev хранит результат предыдущего кадра через recursive ShaderEffectSource.
-    // Для диагностики сначала проверяем, что обычный термошейдер работает.
-    // Затем включай trail.
-    property bool enableTrail: true
-
-    ShaderEffectSource {
-        id: trailPrev
-        anchors.fill: parent
-        sourceItem: trailEffect
-        hideSource: true
-        live: enableTrail
-        recursive: enableTrail
-    }
-
-    ShaderEffect {
-        id: trailEffect
-        anchors.fill: parent
-        property variant source: shaderSource
-        property variant previous: trailPrev
-        property real trailDecay: 0.85
-        property real texelX: 1.0 / Math.max(videoOutput.width, 1)
-        property real texelY: 1.0 / Math.max(videoOutput.height, 1)
-        // sigma в пикселях (чем больше, тем сильнее gaussian-like blur)
-        property real blurAmount: 1.4
-        visible: enableTrail
-        opacity: enableTrail ? 1.0 : 0.0
-
-        fragmentShader: "qrc:/shaders/thermal_orange_purple_trail.frag.qsb"
-    }
-
     Component.onCompleted: {
         if (backendAvailable) {
             cameraController.setVideoOutput(videoOutput)
