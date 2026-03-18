@@ -56,13 +56,13 @@ Window {
         live: true
     }
 
-    // Cel (toon) шейдер в стиле DSO: ступенчатая яркость × базовый цвет (тень = тот же цвет, темнее).
+    // Cel (toon): ступени по яркости, палитра термо (синий → фиолетовый → красный → оранжевый → жёлтый).
     ShaderEffect {
         id: celEffect
         anchors.fill: parent
         property variant source: thermalTex
-        property real numBands: 3.0
-        property real shadowStrength: 0.35
+        property real numBands: 5.0
+        property real shadowStrength: 0.25
         fragmentShader: "qrc:/shaders/cel.frag.qsb"
     }
 

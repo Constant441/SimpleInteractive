@@ -25,10 +25,14 @@ void main()
     float bands = max(floor(numBands), 2.0);
     float stepVal = floor(value * bands + 0.5) / bands;
 
-    // Один плоский цвет на ступень: от тёмно-фиолетового до оранжевого. Чёрные (value≈0) → тот же тёмный тон.
-    vec3 darkPurple = vec3(0.25, 0.0, 0.45) * (1.0 - shadowStrength * 0.5);
-    vec3 brightOrange = vec3(1.0, 0.45, 0.0);
-    vec3 col = mix(darkPurple, brightOrange, stepVal);
+    // Термо-палитра: чёткие зоны от холодного к горячему (видны все ступени).
+    vec3 col;
+    if (stepVal <= 0.0)       col = vec3(0.05, 0.0, 0.2);   // тёмно-синий
+    else if (stepVal <= 0.2)  col = vec3(0.25, 0.0, 0.85);  // фиолетовый
+    else if (stepVal <= 0.4)  col = vec3(0.9, 0.15, 0.35);  // красно-розовый
+    else if (stepVal <= 0.6)  col = vec3(1.0, 0.45, 0.0);   // оранжевый
+    else                      col = vec3(1.0, 0.95, 0.5);   // жёлтый (горячее)
+    col *= (1.0 - shadowStrength * (1.0 - stepVal));
 
     fragColor = vec4(col * a, a) * qt_Opacity;
 }
