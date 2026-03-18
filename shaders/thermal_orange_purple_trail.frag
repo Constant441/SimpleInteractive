@@ -7,6 +7,8 @@ layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
     float trailDecay; // ЧАСТЬ uniform-блока (нужно для Vulkan)
+    float texelX; // 1/textureWidth (в UV-шаге)
+    float texelY; // 1/textureHeight (в UV-шаге)
 };
 
 layout(binding = 1) uniform sampler2D source;    // текущий кадр (вход)
@@ -28,9 +30,7 @@ vec3 thermalMap(vec3 rgb)
 
 void main()
 {
-    // Текстурные размеры (для шагов по пикселю)
-    ivec2 ts = textureSize(source, 0);
-    vec2 px = 1.0 / vec2(max(ts.x, 1), max(ts.y, 1));
+    vec2 px = vec2(texelX, texelY);
 
     // 3x3 blur kernel (approx Gaussian)
     // [1 2 1]
