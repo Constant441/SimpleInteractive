@@ -73,11 +73,9 @@ Window {
         fragmentShader: "qrc:/shaders/cel.frag.qsb"
     }
 
+    // Камеру всегда подключаем через QML CaptureSession к SegmentedVideoItem.
     Component.onCompleted: {
-        if (backendAvailable) {
-            cameraController.setVideoOutput(segmentedVideo)
-            cameraController.start()
-        } else if (hasQmlCamera) {
+        if (hasQmlCamera) {
             qmlCaptureSession.camera.start()
         }
     }

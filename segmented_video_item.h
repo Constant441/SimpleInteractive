@@ -16,7 +16,7 @@ class SegmentedVideoItem : public QQuickPaintedItem
 public:
     explicit SegmentedVideoItem(QQuickItem* parent = nullptr);
 
-    QVideoSink* videoSink() const { return m_sink; }
+    Q_INVOKABLE QVideoSink* videoSink() const { return m_sink; }
     bool backgroundCaptured() const { return m_backgroundCaptured; }
     qreal sensitivity() const { return m_sensitivity; }
     void setSensitivity(qreal v);
