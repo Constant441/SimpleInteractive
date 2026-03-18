@@ -1,5 +1,7 @@
 import QtQuick
+import QtQuick.Controls
 import QtMultimedia
+import TermoCam 1.0
 
 Window {
     width: 800
@@ -12,42 +14,36 @@ Window {
         color: "#000000"
     }
 
-    // Исходный видеопоток
-    VideoOutput {
-        id: videoOutput
+    // Видео с вырезанным фоном (только силуэт человека). Кадры приходят в videoSink.
+    SegmentedVideoItem {
+        id: segmentedVideo
         anchors.fill: parent
-        fillMode: VideoOutput.PreserveAspectFit
+        sensitivity: 0.35
     }
 
     MediaDevices {
         id: mediaDevices
     }
 
-    // Если по какой-то причине C++ backend-контроллер не прокинут в QML,
-    // включаем минимальный fallback через чистый QML.
     property var selectedVideoInput: (mediaDevices.videoInputs.length > 0 ? mediaDevices.videoInputs[0] : mediaDevices.defaultVideoInput)
-    // В QML для cameraDevice нет isNull() (это было C++-подобное предположение).
-    // Поэтому достаточно проверить, что список videoInputs не пуст.
     property bool hasQmlCamera: mediaDevices.videoInputs.length > 0
     property bool backendAvailable: !!cameraController
 
     CaptureSession {
         id: qmlCaptureSession
-        videoOutput: videoOutput
+        videoOutput: segmentedVideo
         camera: Camera {
             id: qmlCamera
             cameraDevice: selectedVideoInput
         }
     }
 
-    // Передаем кадр из VideoOutput в шейдер (QML ShaderEffect компилируется в .qsb).
     ShaderEffectSource {
         id: shaderSource
         anchors.fill: parent
-        sourceItem: videoOutput
+        sourceItem: segmentedVideo
         hideSource: true
         live: true
-        // Не обнуляем opacity: для корректного premultiplied alpha лучше оставлять 1.0.
     }
 
     // Термо-маппинг (оранжевый–фиолетовый), результат в текстуру для Cel.
@@ -79,12 +75,20 @@ Window {
 
     Component.onCompleted: {
         if (backendAvailable) {
-            cameraController.setVideoOutput(videoOutput)
+            cameraController.setVideoOutput(segmentedVideo)
             cameraController.start()
         } else if (hasQmlCamera) {
-            // fallback
             qmlCaptureSession.camera.start()
         }
+    }
+
+    // Кнопка: захватить текущий кадр как фон (выйди из кадра, нажми, затем зайди в кадр).
+    Button {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 12
+        text: segmentedVideo.backgroundCaptured ? qsTr("Обновить фон") : qsTr("Захватить фон")
+        onClicked: segmentedVideo.captureBackground()
     }
 
     Connections {

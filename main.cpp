@@ -3,11 +3,13 @@
 #include <QQmlContext>
 
 #include "camera_controller.h"
-
+#include "segmented_video_item.h"
 
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
+
+    qmlRegisterType<SegmentedVideoItem>("TermoCam", 1, 0, "SegmentedVideoItem");
 
     QQmlApplicationEngine engine;
 

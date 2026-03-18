@@ -12,6 +12,8 @@ qt_add_executable(appTermoCam
     main.cpp
     camera_controller.cpp
     camera_controller.h
+    segmented_video_item.cpp
+    segmented_video_item.h
 )
 
 qt_add_qml_module(appTermoCam
