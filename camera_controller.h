@@ -5,6 +5,7 @@
 
 class QMediaCaptureSession;
 class QCamera;
+class QVideoSink;
 
 class CameraController : public QObject
 {
@@ -36,6 +37,8 @@ private:
     QMediaCaptureSession* m_session = nullptr;
     QCamera* m_camera = nullptr;
     QObject* m_videoOutput = nullptr; // QML VideoOutput item
+    QVideoSink* m_outputSink = nullptr; // Внутренний sink VideoOutput
+    QVideoSink* m_processingSink = nullptr; // Sink, куда приходит исходный кадр
     bool m_hasCamera = false;
     bool m_running = false;
     QString m_status;
