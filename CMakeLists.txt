@@ -38,7 +38,7 @@ target_link_libraries(appTermoCam
 
 qt6_add_shaders(appTermoCam "thermoCam_shaders"
     PREFIX
-        "/shaders"
+        "/"
     FILES
         shaders/thermal_orange_purple.frag
 )

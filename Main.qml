@@ -25,12 +25,22 @@ Window {
         anchors.fill: parent
         sourceItem: videoOutput
         hideSource: true
+        live: true
     }
 
     ShaderEffect {
+        id: thermoEffect
         anchors.fill: parent
         property variant source: shaderSource
-        fragmentShader: "qrc:/shaders/thermal_orange_purple.frag.qsb"
+        // В Qt6 обычно достаточно ":/..." без "qrc:".
+        fragmentShader: ":/shaders/thermal_orange_purple.frag.qsb"
+
+        onStatusChanged: {
+            console.log("Thermo ShaderEffect status:", thermoEffect.status)
+            if (thermoEffect.status !== ShaderEffect.Ready) {
+                console.log("Thermo ShaderEffect log:", thermoEffect.log)
+            }
+        }
     }
 
     Text {
@@ -38,8 +48,10 @@ Window {
         color: "white"
         font.pixelSize: 18
         style: Text.Raised
-        text: cameraController.status
-        visible: !cameraController.running || !cameraController.hasCamera
+        text: (thermoEffect.status === ShaderEffect.Ready)
+              ? cameraController.status
+              : (cameraController.status + "\n" + thermoEffect.log)
+        visible: !cameraController.running || !cameraController.hasCamera || thermoEffect.status !== ShaderEffect.Ready
     }
 
     Rectangle {
