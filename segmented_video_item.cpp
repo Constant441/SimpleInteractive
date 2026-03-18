@@ -1,7 +1,6 @@
 #include "segmented_video_item.h"
 
 #include <QPainter>
-#include <QVideoFrameFormat>
 
 SegmentedVideoItem::SegmentedVideoItem(QQuickItem* parent)
     : QQuickPaintedItem(parent)
@@ -64,16 +63,8 @@ void SegmentedVideoItem::processFrame(const QVideoFrame& frame)
 QImage SegmentedVideoItem::frameToImage(const QVideoFrame& frame)
 {
     QVideoFrame f(frame);
-    if (!f.map(QVideoFrame::ReadOnly))
-        return QImage();
-
-    QImage::Format fmt = QVideoFrameFormat::imageFormatFromPixelFormat(f.format().pixelFormat());
-    QImage img;
-    if (fmt != QImage::Format_Invalid) {
-        img = QImage(f.bits(), f.width(), f.height(), f.bytesPerLine(), fmt).copy();
-    }
-    f.unmap();
-    if (img.isNull() || img.format() == QImage::Format_Invalid)
+    QImage img = f.toImage();
+    if (img.isNull())
         return QImage();
     if (img.format() != QImage::Format_RGB32 && img.format() != QImage::Format_ARGB32)
         img = img.convertToFormat(QImage::Format_RGB32);
