@@ -50,16 +50,15 @@ Window {
         // Не обнуляем opacity: для корректного premultiplied alpha лучше оставлять 1.0.
     }
 
-    // Базовый термошейдер (без trail) — используем для диагностики и как fallback.
+    // Термо-маппинг (оранжевый–фиолетовый), результат в текстуру для Cel.
     ShaderEffect {
         id: thermalBase
         anchors.fill: parent
-        visible: false // будем размывать через отдельные pass'ы ниже
+        visible: false
         property variant source: shaderSource
         fragmentShader: "qrc:/shaders/thermal_orange_purple.frag.qsb"
     }
 
-    // Сохраняем результат термо-маппинга в текстуру для blur pass'ов.
     ShaderEffectSource {
         id: thermalTex
         anchors.fill: parent
@@ -68,30 +67,16 @@ Window {
         live: true
     }
 
+    // Cel (toon) шейдер: постерзация + контур по термо-картинке.
     ShaderEffect {
-        id: blurH
+        id: celEffect
         anchors.fill: parent
         property variant source: thermalTex
         property real texelX: 1.0 / Math.max(videoOutput.width, 1)
-        property real blurScale: 2.0
-        fragmentShader: "qrc:/shaders/gauss_blur_h.frag.qsb"
-    }
-
-    ShaderEffectSource {
-        id: blurHTex
-        anchors.fill: parent
-        sourceItem: blurH
-        hideSource: true
-        live: true
-    }
-
-    ShaderEffect {
-        id: blurV
-        anchors.fill: parent
-        property variant source: blurHTex
         property real texelY: 1.0 / Math.max(videoOutput.height, 1)
-        property real blurScale: 2.0
-        fragmentShader: "qrc:/shaders/gauss_blur_v.frag.qsb"
+        property real numBands: 5.0
+        property real edgeThreshold: 0.12
+        fragmentShader: "qrc:/shaders/cel.frag.qsb"
     }
 
     Component.onCompleted: {

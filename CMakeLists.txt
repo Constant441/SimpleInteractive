@@ -41,8 +41,7 @@ qt6_add_shaders(appTermoCam "thermoCam_shaders"
         "/"
     FILES
         shaders/thermal_orange_purple.frag
-        shaders/gauss_blur_h.frag
-        shaders/gauss_blur_v.frag
+        shaders/cel.frag
 )
 
 include(GNUInstallDirs)
