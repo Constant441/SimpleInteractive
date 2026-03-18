@@ -28,19 +28,25 @@ Window {
         live: true
     }
 
+    // Шейдер с feedback-памятью кадра -> “шлейф”.
+    // trailPrev хранит результат предыдущего кадра через recursive ShaderEffectSource.
+    ShaderEffectSource {
+        id: trailPrev
+        anchors.fill: parent
+        sourceItem: trailEffect
+        hideSource: false
+        live: true
+        recursive: true
+    }
+
     ShaderEffect {
-        id: thermoEffect
+        id: trailEffect
         anchors.fill: parent
         property variant source: shaderSource
-        // В Qt 6 ShaderEffect принимает только file:// или qrc://.
-        fragmentShader: "qrc:/shaders/thermal_orange_purple.frag.qsb"
+        property variant previous: trailPrev
+        property real trailDecay: 0.85
 
-        onStatusChanged: {
-            console.log("Thermo ShaderEffect status:", thermoEffect.status)
-            if (thermoEffect.status !== ShaderEffect.Ready) {
-                console.log("Thermo ShaderEffect log:", thermoEffect.log)
-            }
-        }
+        fragmentShader: "qrc:/shaders/thermal_orange_purple_trail.frag.qsb"
     }
 
     Rectangle {
