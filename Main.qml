@@ -79,6 +79,8 @@ Window {
         property variant source: shaderSource
         property variant previous: trailPrev
         property real trailDecay: 0.85
+        property real motionThreshold: 0.06
+        property real motionWidth: 0.03
         visible: enableTrail
         opacity: enableTrail ? 1.0 : 0.0
 
