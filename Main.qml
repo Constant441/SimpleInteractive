@@ -25,10 +25,10 @@ Window {
 
     // Если по какой-то причине C++ backend-контроллер не прокинут в QML,
     // включаем минимальный fallback через чистый QML.
-    property var selectedVideoInput: (mediaDevices.videoInputs.length > 0
-                                       ? mediaDevices.videoInputs[0]
-                                       : mediaDevices.defaultVideoInput)
-    property bool hasQmlCamera: selectedVideoInput && !selectedVideoInput.isNull()
+    property var selectedVideoInput: (mediaDevices.videoInputs.length > 0 ? mediaDevices.videoInputs[0] : mediaDevices.defaultVideoInput)
+    // В QML для cameraDevice нет isNull() (это было C++-подобное предположение).
+    // Поэтому достаточно проверить, что список videoInputs не пуст.
+    property bool hasQmlCamera: mediaDevices.videoInputs.length > 0
     property bool backendAvailable: !!cameraController
 
     CaptureSession {
@@ -50,15 +50,27 @@ Window {
         opacity: 0.0 // только как источник текстуры для шейдеров
     }
 
+    // Базовый термошейдер (без trail) — используем для диагностики и как fallback.
+    ShaderEffect {
+        id: thermalBase
+        anchors.fill: parent
+        property variant source: shaderSource
+        fragmentShader: "qrc:/shaders/thermal_orange_purple.frag.qsb"
+    }
+
     // Шейдер с feedback-памятью кадра -> “шлейф”.
     // trailPrev хранит результат предыдущего кадра через recursive ShaderEffectSource.
+    // Для диагностики сначала проверяем, что обычный термошейдер работает.
+    // Затем включай trail.
+    property bool enableTrail: false
+
     ShaderEffectSource {
         id: trailPrev
         anchors.fill: parent
         sourceItem: trailEffect
         hideSource: true
-        live: true
-        recursive: true
+        live: enableTrail
+        recursive: enableTrail
         opacity: 0.0 // только feedback-текстура
     }
 
@@ -68,6 +80,8 @@ Window {
         property variant source: shaderSource
         property variant previous: trailPrev
         property real trailDecay: 0.85
+        visible: enableTrail
+        opacity: enableTrail ? 1.0 : 0.0
 
         fragmentShader: "qrc:/shaders/thermal_orange_purple_trail.frag.qsb"
     }
@@ -79,6 +93,16 @@ Window {
         } else if (hasQmlCamera) {
             // fallback
             qmlCaptureSession.camera.start()
+        }
+    }
+
+    Connections {
+        target: mediaDevices
+        function onVideoInputsChanged() {
+            if (!backendAvailable && hasQmlCamera) {
+                // Если бэкенд не работает, а список камер обновился — запускаем QML-камеру.
+                qmlCaptureSession.camera.start()
+            }
         }
     }
 }
