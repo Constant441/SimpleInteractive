@@ -9,6 +9,7 @@ layout(std140, binding = 0) uniform buf {
     float trailDecay; // ЧАСТЬ uniform-блока (нужно для Vulkan)
     float texelX; // 1/textureWidth (в UV-шаге)
     float texelY; // 1/textureHeight (в UV-шаге)
+    float blurAmount; // радиус смещения выборок (0..~3)
 };
 
 layout(binding = 1) uniform sampler2D source;    // текущий кадр (вход)
@@ -30,7 +31,7 @@ vec3 thermalMap(vec3 rgb)
 
 void main()
 {
-    vec2 px = vec2(texelX, texelY);
+    vec2 px = vec2(texelX, texelY) * blurAmount;
 
     // 3x3 blur kernel (approx Gaussian)
     // [1 2 1]
