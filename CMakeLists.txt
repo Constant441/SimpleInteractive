@@ -4,7 +4,7 @@ project(TermoCam VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia ShaderTools)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -34,6 +34,13 @@ set_target_properties(appTermoCam PROPERTIES
 
 target_link_libraries(appTermoCam
     PRIVATE Qt6::Quick Qt6::Multimedia
+)
+
+qt6_add_shaders(appTermoCam "thermoCam_shaders"
+    PREFIX
+        "/shaders"
+    FILES
+        shaders/thermal_orange_purple.frag
 )
 
 include(GNUInstallDirs)
