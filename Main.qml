@@ -37,29 +37,12 @@ Window {
         live: true
     }
 
+    // Только термо-градиент (оранжевый ↔ фиолетовый по яркости)
     ShaderEffect {
         id: thermalBase
         anchors.fill: parent
-        visible: false
         property variant source: shaderSource
         fragmentShader: "qrc:/shaders/thermal_orange_purple.frag.qsb"
-    }
-
-    ShaderEffectSource {
-        id: thermalTex
-        anchors.fill: parent
-        sourceItem: thermalBase
-        hideSource: true
-        live: true
-    }
-
-    ShaderEffect {
-        id: celEffect
-        anchors.fill: parent
-        property variant source: thermalTex
-        property real numBands: 5.0
-        property real shadowStrength: 0.25
-        fragmentShader: "qrc:/shaders/cel.frag.qsb"
     }
 
     FileDialog {
