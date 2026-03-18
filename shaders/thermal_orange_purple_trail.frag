@@ -152,6 +152,12 @@ void main()
     vec3 purple = vec3(0.55, 0.0, 1.0);
     vec3 col = mix(purple, orange, gTrail);
 
+    // Debug/контроль: если blurAmount не передается в шейдер,
+    // то при смене blurAmount на 0/9999 визуально ничего не изменится.
+    // Этот микс делает сильную контрольную разницу на больших blurAmount.
+    float dbg = clamp(blurAmount / 10.0, 0.0, 1.0);
+    col = mix(col, vec3(0.0, 1.0, 1.0), dbg * 0.6);
+
     // Возвращаем premultiplied RGB с альфой от текущего видео.
     fragColor = vec4(col * outA, outA) * qt_Opacity;
 }
