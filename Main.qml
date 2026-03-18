@@ -43,19 +43,6 @@ Window {
         }
     }
 
-    Text {
-        anchors.centerIn: parent
-        color: "white"
-        font.pixelSize: 18
-        style: Text.Raised
-        text: (cameraController ? cameraController.status : "")
-              + ((thermoEffect.status === ShaderEffect.Ready) ? "" : ("\n" + thermoEffect.log))
-        visible: !cameraController
-                 || !cameraController.running
-                 || !cameraController.hasCamera
-                 || thermoEffect.status !== ShaderEffect.Ready
-    }
-
     Rectangle {
         anchors.fill: parent
         color: "#000000"
