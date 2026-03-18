@@ -11,7 +11,6 @@ Window {
         id: videoOutput
         anchors.fill: parent
         fillMode: VideoOutput.PreserveAspectFit
-        videoSink: cameraController.videoSink
     }
 
     Rectangle {
@@ -30,5 +29,8 @@ Window {
         visible: !cameraController.running || !cameraController.hasCamera
     }
 
-    Component.onCompleted: cameraController.start()
+    Component.onCompleted: {
+        cameraController.setVideoOutput(videoOutput)
+        cameraController.start()
+    }
 }

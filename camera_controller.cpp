@@ -4,24 +4,16 @@
 #include <QCameraDevice>
 #include <QMediaCaptureSession>
 #include <QMediaDevices>
-#include <QVideoSink>
 
 CameraController::CameraController(QObject* parent)
     : QObject(parent)
 {
-    m_sink = new QVideoSink(this);
     m_session = new QMediaCaptureSession(this);
-    m_session->setVideoSink(m_sink);
     m_status = tr("Инициализация…");
     updateDevices();
 }
 
 CameraController::~CameraController() = default;
-
-QObject* CameraController::videoSink() const
-{
-    return m_sink;
-}
 
 bool CameraController::hasCamera() const
 {
@@ -57,6 +49,15 @@ void CameraController::start()
         emit statusChanged();
         return;
     }
+
+    if (!m_videoOutput) {
+        m_status = tr("VideoOutput не задан (сначала вызови setVideoOutput).");
+        emit statusChanged();
+        return;
+    }
+
+    // Подключаем QML VideoOutput к session (внутри Qt будет использован videoSink()).
+    m_session->setVideoOutput(m_videoOutput);
 
     // Выбираем камеру: сначала первую из списка, иначе defaultVideoInput.
     const auto inputs = QMediaDevices::videoInputs();
@@ -110,6 +111,24 @@ void CameraController::stop()
     if (m_running) {
         m_running = false;
         emit runningChanged();
+    }
+}
+
+void CameraController::setVideoOutput(QObject* videoOutput)
+{
+    if (m_videoOutput == videoOutput)
+        return;
+
+    m_videoOutput = videoOutput;
+
+    // Если камера уже запущена — перезапустим, чтобы session начал писать в нужный sink.
+    if (m_running) {
+        stop();
+        start();
+    } else {
+        // Даже без start() можно заранее привязать preview.
+        if (m_videoOutput)
+            m_session->setVideoOutput(m_videoOutput);
     }
 }
 
