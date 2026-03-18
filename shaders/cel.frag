@@ -22,11 +22,11 @@ void main()
     float value = dot(baseColor, vec3(0.344, 0.5, 0.156));
     value = clamp(value, 0.0, 1.0);
 
-    // Ступенчатый ramp (Color Ramp как в статье): value -> дискретные уровни
+    // Ступенчатый ramp: value -> дискретные уровни по всей картинке
     float bands = max(floor(numBands), 2.0);
     float stepVal = floor(value * bands + 0.5) / bands;
-    // Тени не в ноль: фактор от shadowStrength до 1.0
-    float factor = mix(shadowStrength, 1.0, stepVal);
+    // Фактор от (1 - shadowStrength) до 1.0, чтобы тёмные ступени не уходили в черноту и cel был виден везде
+    float factor = mix(1.0 - shadowStrength, 1.0, stepVal);
 
     vec3 col = baseColor * factor;
 
