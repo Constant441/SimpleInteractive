@@ -3,47 +3,32 @@
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 
+// DSO-style Cel: яркость через ступенчатый ramp, базовый цвет умножается на фактор (тень = тот же цвет, темнее).
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
-    float texelX;
-    float texelY;
-    float numBands;
-    float edgeThreshold;
+    float numBands;   // число ступеней (2–4 типично)
+    float shadowStrength; // насколько темнее тени (0.2–0.5)
 };
 
 layout(binding = 1) uniform sampler2D source;
 
 void main()
 {
-    vec2 uv = qt_TexCoord0;
-    vec4 p = texture(source, uv);
+    vec4 p = texture(source, qt_TexCoord0);
     float a = max(p.a, 1e-5);
-    vec3 rgb = p.rgb / a;
+    vec3 baseColor = p.rgb / a;
 
-    // Яркость из уже термо-раскрашенного кадра (orange/purple)
-    float g = dot(rgb, vec3(0.344, 0.5, 0.156));
-    g = clamp(g, 0.0, 1.0);
+    float value = dot(baseColor, vec3(0.344, 0.5, 0.156));
+    value = clamp(value, 0.0, 1.0);
 
-    // Cel: постерзация в полосы
+    // Ступенчатый ramp (Color Ramp как в статье): value -> дискретные уровни
     float bands = max(floor(numBands), 2.0);
-    float gCel = floor(g * bands + 0.5) / bands;
+    float stepVal = floor(value * bands + 0.5) / bands;
+    // Тени не в ноль: фактор от shadowStrength до 1.0
+    float factor = mix(shadowStrength, 1.0, stepVal);
 
-    // Тот же градиент оранжевый–фиолетовый, но по gCel
-    vec3 orange = vec3(1.0, 0.45, 0.0);
-    vec3 purple = vec3(0.55, 0.0, 1.0);
-    vec3 col = mix(purple, orange, gCel);
-
-    // Контур: разница с соседями по яркости
-    float gL = dot(texture(source, uv + vec2(-texelX, 0.0)).rgb / max(texture(source, uv + vec2(-texelX, 0.0)).a, 1e-5), vec3(0.344, 0.5, 0.156));
-    float gR = dot(texture(source, uv + vec2( texelX, 0.0)).rgb / max(texture(source, uv + vec2( texelX, 0.0)).a, 1e-5), vec3(0.344, 0.5, 0.156));
-    float gT = dot(texture(source, uv + vec2(0.0, -texelY)).rgb / max(texture(source, uv + vec2(0.0, -texelY)).a, 1e-5), vec3(0.344, 0.5, 0.156));
-    float gB = dot(texture(source, uv + vec2(0.0,  texelY)).rgb / max(texture(source, uv + vec2(0.0,  texelY)).a, 1e-5), vec3(0.344, 0.5, 0.156));
-
-    float edge = abs(gR - gL) + abs(gT - gB);
-    float outline = 1.0 - smoothstep(edgeThreshold * 0.5, edgeThreshold, edge);
-
-    col = mix(col, vec3(0.0, 0.0, 0.0), outline);
+    vec3 col = baseColor * factor;
 
     fragColor = vec4(col * a, a) * qt_Opacity;
 }

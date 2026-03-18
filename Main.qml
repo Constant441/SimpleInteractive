@@ -67,15 +67,13 @@ Window {
         live: true
     }
 
-    // Cel (toon) шейдер: постерзация + контур по термо-картинке.
+    // Cel (toon) шейдер в стиле DSO: ступенчатая яркость × базовый цвет (тень = тот же цвет, темнее).
     ShaderEffect {
         id: celEffect
         anchors.fill: parent
         property variant source: thermalTex
-        property real texelX: 1.0 / Math.max(videoOutput.width, 1)
-        property real texelY: 1.0 / Math.max(videoOutput.height, 1)
-        property real numBands: 5.0
-        property real edgeThreshold: 0.12
+        property real numBands: 3.0
+        property real shadowStrength: 0.35
         fragmentShader: "qrc:/shaders/cel.frag.qsb"
     }
 
