@@ -19,6 +19,27 @@ Window {
         fillMode: VideoOutput.PreserveAspectFit
     }
 
+    MediaDevices {
+        id: mediaDevices
+    }
+
+    // Если по какой-то причине C++ backend-контроллер не прокинут в QML,
+    // включаем минимальный fallback через чистый QML.
+    property var selectedVideoInput: (mediaDevices.videoInputs.length > 0
+                                       ? mediaDevices.videoInputs[0]
+                                       : mediaDevices.defaultVideoInput)
+    property bool hasQmlCamera: selectedVideoInput && !selectedVideoInput.isNull()
+    property bool backendAvailable: !!cameraController
+
+    CaptureSession {
+        id: qmlCaptureSession
+        videoOutput: videoOutput
+        camera: Camera {
+            id: qmlCamera
+            cameraDevice: selectedVideoInput
+        }
+    }
+
     // Передаем кадр из VideoOutput в шейдер (QML ShaderEffect компилируется в .qsb).
     ShaderEffectSource {
         id: shaderSource
@@ -51,17 +72,13 @@ Window {
         fragmentShader: "qrc:/shaders/thermal_orange_purple_trail.frag.qsb"
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: "#000000"
-        opacity: cameraController.running ? 0.0 : 0.35
-        visible: !cameraController.running
-    }
-
     Component.onCompleted: {
-        if (cameraController) {
+        if (backendAvailable) {
             cameraController.setVideoOutput(videoOutput)
             cameraController.start()
+        } else if (hasQmlCamera) {
+            // fallback
+            qmlCaptureSession.camera.start()
         }
     }
 }
