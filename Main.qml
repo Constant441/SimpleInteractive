@@ -1,43 +1,32 @@
 import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
 import QtMultimedia
 
 Window {
     width: 800
     height: 600
     visible: true
-    title: qsTr("TermoCam - WebCam")
+    title: qsTr("TermoCam")
 
     Rectangle {
         anchors.fill: parent
         color: "#000000"
     }
 
-    // Исходный видеопоток
+    // Видео из файла
+    MediaPlayer {
+        id: mediaPlayer
+        source: ""
+        videoOutput: videoOutput
+        loops: MediaPlayer.Infinite
+        onSourceChanged: if (source) play()
+    }
+
     VideoOutput {
         id: videoOutput
         anchors.fill: parent
         fillMode: VideoOutput.PreserveAspectFit
-    }
-
-    MediaDevices {
-        id: mediaDevices
-    }
-
-    // Если по какой-то причине C++ backend-контроллер не прокинут в QML,
-    // включаем минимальный fallback через чистый QML.
-    property var selectedVideoInput: (mediaDevices.videoInputs.length > 0 ? mediaDevices.videoInputs[0] : mediaDevices.defaultVideoInput)
-    // В QML для cameraDevice нет isNull() (это было C++-подобное предположение).
-    // Поэтому достаточно проверить, что список videoInputs не пуст.
-    property bool hasQmlCamera: mediaDevices.videoInputs.length > 0
-    property bool backendAvailable: !!cameraController
-
-    CaptureSession {
-        id: qmlCaptureSession
-        videoOutput: videoOutput
-        camera: Camera {
-            id: qmlCamera
-            cameraDevice: selectedVideoInput
-        }
     }
 
     // Передаем кадр из VideoOutput в шейдер (QML ShaderEffect компилируется в .qsb).
@@ -77,23 +66,18 @@ Window {
         fragmentShader: "qrc:/shaders/cel.frag.qsb"
     }
 
-    Component.onCompleted: {
-        if (backendAvailable) {
-            cameraController.setVideoOutput(videoOutput)
-            cameraController.start()
-        } else if (hasQmlCamera) {
-            // fallback
-            qmlCaptureSession.camera.start()
-        }
+    FileDialog {
+        id: fileDialog
+        title: qsTr("Выберите видео")
+        nameFilters: [ qsTr("Видео") + " (*.mp4 *.webm *.mkv *.avi *.mov)", qsTr("Все файлы") + " (*)" ]
+        onAccepted: mediaPlayer.source = selectedFile
     }
 
-    Connections {
-        target: mediaDevices
-        function onVideoInputsChanged() {
-            if (!backendAvailable && hasQmlCamera) {
-                // Если бэкенд не работает, а список камер обновился — запускаем QML-камеру.
-                qmlCaptureSession.camera.start()
-            }
-        }
+    Button {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 12
+        text: qsTr("Открыть файл")
+        onClicked: fileDialog.open()
     }
 }
