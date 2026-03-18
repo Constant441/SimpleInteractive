@@ -79,10 +79,10 @@ Window {
         property variant source: shaderSource
         property variant previous: trailPrev
         property real trailDecay: 0.85
-        // sigma в пикселях (чем больше, тем сильнее gaussian-like blur)
-        property real blurAmount: 1.4
         property real texelX: 1.0 / Math.max(videoOutput.width, 1)
         property real texelY: 1.0 / Math.max(videoOutput.height, 1)
+        // sigma в пикселях (чем больше, тем сильнее gaussian-like blur)
+        property real blurAmount: 1.4
         visible: enableTrail
         opacity: enableTrail ? 1.0 : 0.0
 
